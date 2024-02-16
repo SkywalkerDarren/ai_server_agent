@@ -26,8 +26,25 @@ class AtMessageHandler(WebsocketHandler):
                 return
 
             if content.startswith('/'):
-                # TODO: handle command
-                pass
+                if content == '/启动服务器':
+                    from ali_service.ali_client import AliClient
+                    ali = AliClient()
+                    status = await ali.start_server()
+                    if status:
+                        await self.kook_client.create_message(CONFIG.kook_channel_id, f'服务器启动成功，ip地址：{status.public_ip}')
+                    else:
+                        await self.kook_client.create_message(CONFIG.kook_channel_id, '服务器启动失败')
+                elif content == '/关闭服务器':
+                    from ali_service.ali_client import AliClient
+                    ali = AliClient()
+                    stop_success = await ali.stop_server()
+                    if stop_success:
+                        await self.kook_client.create_message(CONFIG.kook_channel_id, '服务器关闭成功')
+                    else:
+                        await self.kook_client.create_message(CONFIG.kook_channel_id, '服务器关闭失败')
+                else:
+                    await self.kook_client.create_message(CONFIG.kook_channel_id, '不支持的命令，当前支持的命令有：/启动服务器、/关闭服务器')
+
             else:
                 from ai_service.ai import AI
                 ai = AI()

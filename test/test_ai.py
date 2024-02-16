@@ -3,11 +3,11 @@ import unittest
 from ai_service.ai import AI
 
 
-class MyTestCase(unittest.TestCase):
-    def test_ai(self):
+class MyTestCase(unittest.IsolatedAsyncioTestCase):
+    async def test_ai(self):
         content = "你好"
         ai = AI()
-        response = ai.chat(content)
+        response = await ai.chat(content)
         print(response)
 
 
