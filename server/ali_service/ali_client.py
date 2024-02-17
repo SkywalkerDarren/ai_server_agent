@@ -1,6 +1,8 @@
 import asyncio
+import base64
 import dataclasses
 import json
+import os
 from typing import Literal, Optional
 
 from conf.config import CONFIG
@@ -17,17 +19,22 @@ class ServerStatus:
 
 
 class AliClient:
+
     def __init__(self):
+        self.runtime = util_models.RuntimeOptions(
+            autoretry=True,
+            ignore_ssl=True
+        )
+
+    @property
+    def client(self):
         config = open_api_models.Config(
             access_key_id=CONFIG.aliyun_access_key_id,
             access_key_secret=CONFIG.aliyun_access_key_secret
         )
         config.endpoint = CONFIG.aliyun_endpoint
-        self.runtime = util_models.RuntimeOptions(
-            autoretry=True,
-            ignore_ssl=True
-        )
-        self.client = Ecs20140526Client(config)
+
+        return Ecs20140526Client(config)
 
     async def start_instance(self):
         start_instance_request = ecs_20140526_models.StartInstanceRequest(
@@ -71,7 +78,6 @@ class AliClient:
             resp = await self.client.describe_instances_with_options_async(describe_instances_request,
                                                                            self.runtime)
             instance = resp.body.instances.instance[0]
-            print(instance)
             if instance:
                 print(f"Instance {CONFIG.aliyun_instance_id} status: {instance.status}")
                 if instance.public_ip_address.ip_address:
@@ -81,11 +87,90 @@ class AliClient:
                     public_ip = None
                 return ServerStatus(status=instance.status, public_ip=public_ip)
             else:
+                print("Instance not found")
                 return None
 
         except Exception as error:
             print(f"get_server_status error: {error}")
             return None
+
+    async def run_command(self, command: str) -> Optional[str]:
+        run_command_request = ecs_20140526_models.RunCommandRequest(
+            region_id=CONFIG.aliyun_region_id,
+            type='RunShellScript',
+            command_content=command,
+            working_dir='/',
+            instance_id=[
+                CONFIG.aliyun_instance_id,
+            ],
+            username='root',
+            timeout=60
+        )
+        try:
+            # 复制代码运行请自行打印 API 的返回值
+            resp = await self.client.run_command_with_options_async(run_command_request, self.runtime)
+            return resp.body.invoke_id
+        except Exception as error:
+            print(f"run_command error: {error}")
+
+    async def query_command_result(self, command_id: str):
+        describe_invocation_results_request = ecs_20140526_models.DescribeInvocationResultsRequest(
+            region_id=CONFIG.aliyun_region_id,
+            invoke_id=command_id
+        )
+        try:
+            # 复制代码运行请自行打印 API 的返回值
+            resp = await self.client.describe_invocation_results_with_options_async(describe_invocation_results_request,
+                                                                                    self.runtime)
+            invoke = resp.body.invocation.invocation_results.invocation_result[0]
+            print(resp.body.invocation)
+            return invoke
+        except Exception as error:
+            print(f"query_command_result error: {error}")
+
+    async def check_assistant_status(self):
+        describe_cloud_assistant_status_request = ecs_20140526_models.DescribeCloudAssistantStatusRequest(
+            region_id=CONFIG.aliyun_region_id,
+            ostype='Linux',
+            instance_id=[
+                CONFIG.aliyun_instance_id
+            ]
+        )
+        try:
+            resp = await self.client.describe_cloud_assistant_status_with_options_async(
+                describe_cloud_assistant_status_request, self.runtime)
+            status = resp.body.instance_cloud_assistant_status_set.instance_cloud_assistant_status[
+                0].cloud_assistant_status
+            return status == 'true'
+        except Exception as error:
+            print(f"check_assistant_status error: {error}")
+
+    async def execute_command(self, command: str):
+        invoke_id = await self.run_command(command)
+        while True:
+            invoke = await self.query_command_result(invoke_id)
+            if not invoke:
+                print("Command not found")
+                return
+            if invoke.invoke_record_status == 'Running':
+                await asyncio.sleep(1)
+                continue
+            elif invoke.invoke_record_status == 'Finished':
+                output = base64.b64decode(invoke.output).decode('utf-8')
+                print(f"Command finished with output:\n{output}")
+                return
+            elif invoke.invoke_record_status == 'Failed':
+                exit_code = invoke.exit_code
+                print(f"Command failed with exit code: {exit_code}")
+                return
+            elif invoke.invoke_record_status == 'Stopped':
+                print("Command stopped")
+                return
+            elif invoke.invoke_record_status == 'Stopping':
+                print("Command stopping")
+                await asyncio.sleep(1)
+                continue
+
 
     async def start_server(self) -> Optional[ServerStatus]:
         while True:
@@ -99,7 +184,11 @@ class AliClient:
                 continue
             if status.status == 'Running':
                 print(f"Server is running on IP: {status.public_ip}")
-                await asyncio.sleep(1)
+                while not await self.check_assistant_status():
+                    await asyncio.sleep(1)
+                with open(f"{os.path.dirname(__file__)}/startup.sh", 'r', encoding='utf-8') as f:
+                    command = f.read()
+                await self.execute_command(command)
                 return status
             if status.status == 'Stopping':
                 print("Server is stopping")

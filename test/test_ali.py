@@ -28,6 +28,15 @@ class MyTestCase(unittest.IsolatedAsyncioTestCase):
         client = AliClient()
         await client.stop_server()
 
+    async def test_run_command(self):
+        client = AliClient()
+        cmd = "ls"
+        await client.execute_command(cmd)
+
+    async def test_check_assistant_status(self):
+        client = AliClient()
+        await client.check_assistant_status()
+
 
 if __name__ == '__main__':
     unittest.main()

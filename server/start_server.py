@@ -8,10 +8,20 @@ from kook_bot.kook_websocket import KookWebsocket
 from ws_service.hearbeat_service import HeartbeatService
 from ws_service.message_service import MessageService
 from ws_service.websocket_server import WebSocketServer
+import argparse
+
+
+def cli():
+    args = argparse.ArgumentParser()
+    args.add_argument("--host", type=str, default="localhost")
+    args.add_argument("--port", type=int, default=39401)
+    return args.parse_args()
 
 
 async def run():
-    ws_server = WebSocketServer("127.0.0.1", 39401)
+    args = cli()
+
+    ws_server = WebSocketServer(args.host, args.port)
     ws_server.add_handler(HeartbeatService())
     msg_service = MessageService()
     ws_server.add_handler(msg_service)
@@ -26,6 +36,7 @@ async def run():
     kook_websocket.add_handler(AtMessageHandler(kook_client, msg_service, ali_client, ai_client))
     kook_task = asyncio.create_task(kook_websocket.start())
 
+    print(f'ws server start at {args.host}:{args.port}')
     await asyncio.gather(ws_task, kook_task)
 
 

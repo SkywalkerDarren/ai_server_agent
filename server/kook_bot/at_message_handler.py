@@ -46,6 +46,9 @@ class AtMessageHandler(WebsocketHandler):
                 elif content == '/系统信息':
                     system_info = await self.message_service.get_system_info()
                     await self.kook_client.create_message(CONFIG.kook_channel_id, f'系统信息：{system_info}')
+                elif content == '/echo':
+                    resp = await self.kook_client.create_message(CONFIG.kook_channel_id, 'echo')
+                    print(f'echo response: {resp}, {CONFIG.kook_channel_id}')
                 else:
                     await self.kook_client.create_message(CONFIG.kook_channel_id, '不支持的命令')
 
@@ -53,7 +56,7 @@ class AtMessageHandler(WebsocketHandler):
                 ai_response = await self.ai_client.chat(content)
                 print(f'ai: {ai_response}')
                 response = await self.kook_client.create_message(CONFIG.kook_channel_id, ai_response)
-                print(response)
+                print(f"kook response: {response}")
 
     async def on_disconnected(self, websocket):
         pass

@@ -7,7 +7,7 @@ from kook_bot.kook_websocket import KookWebsocket
 
 class MyTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_kook(self):
-        client = KookWebsocket()
+        client = KookWebsocket(KookClient())
         await client.start()
 
     async def test_kook_channel_list(self):
@@ -34,6 +34,11 @@ class MyTestCase(unittest.IsolatedAsyncioTestCase):
         client = KookClient()
         user_view = await client.user_view(CONFIG.kook_uid, CONFIG.kook_guild_id)
         print(user_view)
+
+    async def test_kook_create_message(self):
+        client = KookClient()
+        message = await client.create_message(CONFIG.kook_channel_id, 'test')
+        print(message)
 
 
 if __name__ == '__main__':

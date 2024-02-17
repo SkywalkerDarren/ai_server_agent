@@ -57,6 +57,7 @@ class KookClient:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=self.HEADER, json={'target_id': channel_id, 'content': content}) as response:
                 data = await response.json()
+                print(data)
                 return data['data']
 
     async def get_gateway(self) -> dict:
