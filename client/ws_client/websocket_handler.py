@@ -9,7 +9,7 @@ class WebsocketHandler(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def on_message(self, websocket: WebSocketClientProtocol, message: str):
+    async def on_message(self, websocket: WebSocketClientProtocol, message: dict):
         pass
 
     @abc.abstractmethod

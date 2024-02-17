@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import websockets
@@ -5,11 +6,10 @@ import websockets
 from ws_client.websocket_handler import WebsocketHandler
 
 
-class WebSocketClient:
+class WebsocketClient:
     def __init__(self, uri, interval=1):
         self.interval = interval
         self.uri = uri
-        self.websocket = None
         self.handlers: list[WebsocketHandler] = []
 
     def add_handler(self, handler: WebsocketHandler):
@@ -24,24 +24,24 @@ class WebSocketClient:
         else:
             raise ValueError(f"Handler {handler} not found")
 
+    async def handle_message(self, ws, message):
+        for handler in self.handlers:
+            await handler.on_message(ws, json.loads(message))
+
     async def run(self):
         """启动客户端，接收和处理消息"""
-        self.websocket = await websockets.connect(self.uri)
+        websocket = await websockets.connect(self.uri)
         print(f"Connected to {self.uri}")
         for handler in self.handlers:
-            await handler.on_connected(self.websocket)
+            await handler.on_connected(websocket)
         try:
-            # 持续监听和处理消息
-            while True:
-                msg = await self.websocket.recv()
-                print(f"Message received: {msg}")
-                for handler in self.handlers:
-                    await handler.on_message(self.websocket, msg)
-                print(f"Message from server: {msg}")
+            async for message in websocket:
+                print(f"Message received: {message}")
+                asyncio.create_task(self.handle_message(websocket, message))
         except websockets.exceptions.ConnectionClosed:
             print("Connection closed")
         finally:
             for handler in self.handlers:
-                await handler.on_disconnected(self.websocket)
-            await self.websocket.close()
+                await handler.on_disconnected(websocket)
+            await websocket.close()
             print("Disconnected")

@@ -12,9 +12,8 @@ class HeartbeatService(WebsocketHandler):
     async def on_connected(self, websocket: WebSocketServerProtocol):
         ...
 
-    async def on_message(self, websocket: WebSocketServerProtocol, message: str):
+    async def on_message(self, websocket: WebSocketServerProtocol, message: dict):
         """处理心跳消息"""
-        message = json.loads(message)
         if message['type'] == "heartbeat":
             resp = {
                 "type": "heartbeat_ack",

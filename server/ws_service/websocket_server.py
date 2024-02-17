@@ -1,3 +1,6 @@
+import asyncio
+import json
+
 import websockets
 from websockets import WebSocketServerProtocol
 
@@ -5,7 +8,7 @@ from ws_service.websocket_handler import WebsocketHandler
 
 
 class WebSocketServer:
-    def __init__(self, host='localhost', port=3940):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
         self.server = None
@@ -23,6 +26,10 @@ class WebSocketServer:
         else:
             raise ValueError(f"Handler {handler} not found")
 
+    async def handle_message(self, ws, message):
+        for handler in self.handlers:
+            await handler.on_message(ws, json.loads(message))
+
     async def handler(self, websocket: WebSocketServerProtocol):
         """处理客户端连接和心跳"""
         print(f"Client connected: {websocket.remote_address}")
@@ -31,9 +38,7 @@ class WebSocketServer:
         try:
             async for message in websocket:
                 print(f"Message received: {message}")
-                for handler in self.handlers:
-                    await handler.on_message(websocket, message)
-                print(f"Message from client: {message}")
+                asyncio.create_task(self.handle_message(websocket, message))
         except websockets.exceptions.ConnectionClosed as e:
             print(f"Client disconnected: {e.reason}")
         finally:

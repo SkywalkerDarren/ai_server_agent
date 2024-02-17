@@ -11,7 +11,7 @@ class WebsocketHandler(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def on_message(self, websocket: WebSocketServerProtocol, message: str):
+    async def on_message(self, websocket: WebSocketServerProtocol, message: dict):
         pass
 
     @abc.abstractmethod

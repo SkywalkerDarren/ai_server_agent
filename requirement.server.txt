@@ -4,3 +4,4 @@ aiohttp
 openai
 tiktoken
 alibabacloud_ecs20140526
+psutil

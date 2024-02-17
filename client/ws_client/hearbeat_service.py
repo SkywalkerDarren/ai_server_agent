@@ -22,7 +22,6 @@ class HeartbeatService(WebsocketHandler):
 
     async def on_message(self, websocket: WebSocketClientProtocol, message):
         """处理心跳消息"""
-        message = json.loads(message)
         if message['type'] == "heartbeat_ack":
             data = message['data']
             rtt = asyncio.get_event_loop().time() - data['timestamp']

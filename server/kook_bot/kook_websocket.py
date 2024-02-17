@@ -12,8 +12,8 @@ import websockets
 
 class KookWebsocket:
 
-    def __init__(self):
-        self.kook_client = KookClient()
+    def __init__(self, kook_client):
+        self.kook_client = kook_client
         self.guild_id = CONFIG.kook_guild_id
         self.sn = 0
         self.session_id = None
@@ -21,9 +21,7 @@ class KookWebsocket:
         self.timeout = 6
         self.last_pong_time = 0
         self.timeout_task = None
-        self.handlers: list[WebsocketHandler] = [
-            AtMessageHandler(self.kook_client),
-        ]
+        self.handlers: list[WebsocketHandler] = []
 
     def add_handler(self, handler):
         self.handlers.append(handler)
