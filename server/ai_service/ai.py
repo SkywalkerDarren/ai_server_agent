@@ -14,7 +14,7 @@ class AI:
         self.ali_client = ali_client
         self.model_name = "gpt-3.5-turbo-0125"
         self.client = AsyncOpenAI(
-            api_key=CONFIG.openai_token,
+            api_key=CONFIG.openai.token,
         )
         self.token_model = tiktoken.encoding_for_model(self.model_name)
 

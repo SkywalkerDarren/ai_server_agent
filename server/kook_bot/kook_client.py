@@ -8,13 +8,13 @@ from conf.config import CONFIG
 class KookClient:
     BASE_URL = 'https://www.kookapp.cn'
     HEADER = {
-        'Authorization': f'Bot {CONFIG.kook_token}',
+        'Authorization': f'Bot {CONFIG.kook.token}',
         'Accept-Language': 'en-US',
         'Content-Type': 'application/json',
     }
 
     def __init__(self):
-        self.guild_id = CONFIG.kook_guild_id
+        self.guild_id = CONFIG.kook.guild_id
         self.sn = 0
 
     async def guild_list(self):

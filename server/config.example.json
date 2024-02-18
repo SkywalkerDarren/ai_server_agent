@@ -1,0 +1,20 @@
+{
+  "openai": {
+    "token": "<YOUR OPENAI KEY>"
+  },
+  "kook": {
+    "token": "<YOUR TOKEN>",
+    "guild_id": "",
+    "channel_id": "",
+    "role_id": "",
+    "uid": ""
+  },
+  "aliyun": {
+    "access_key_id": "<YOUR ACCESS KEY>",
+    "access_key_secret": "<YOUR ACCESS SECRET>",
+    "region_id": "<YOUR REGION>",
+    "server_name": "game-server",
+    "template_name": "game-template",
+    "disk_name": "game-disk"
+  }
+}

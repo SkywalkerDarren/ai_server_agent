@@ -14,7 +14,7 @@ class KookWebsocket:
 
     def __init__(self, kook_client):
         self.kook_client = kook_client
-        self.guild_id = CONFIG.kook_guild_id
+        self.guild_id = CONFIG.kook.guild_id
         self.sn = 0
         self.session_id = None
         self.interval = 30
