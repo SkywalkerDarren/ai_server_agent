@@ -49,6 +49,7 @@ class KookWebsocket:
             await handler.on_message(ws, message['d'])
 
     async def start(self):
+        ws = None
         while True:
             try:
                 i = 0
@@ -56,10 +57,12 @@ class KookWebsocket:
                     try:
                         url = (await self.kook_client.get_gateway())['url']
                         break
+                    except asyncio.CancelledError as e:
+                        print(f'Cancelled', e)
+                        raise e
                     except Exception as e:
                         print(f'Failed to get gateway', e)
                         await asyncio.sleep(min(2 ** i, 60))
-
 
                 max_connect_retry = 3
                 for i in range(max_connect_retry):
@@ -68,6 +71,11 @@ class KookWebsocket:
                         if ws.open:
                             print(f'Connected to {url}')
                             break
+                    except asyncio.CancelledError as e:
+                        if ws and ws.open:
+                            await ws.close()
+                        print(f'Cancelled', e)
+                        raise e
                     except Exception as e:
                         print(f'Failed to connect to {url}', e)
                         await asyncio.sleep(2 ** i)
@@ -108,6 +116,11 @@ class KookWebsocket:
                         self.sn = message['sn']
                         print('dispatch event')
                         asyncio.create_task(self.handle_message(ws, message))
+            except asyncio.CancelledError as e:
+                if ws and ws.open:
+                    await ws.close()
+                print(f'Cancelled', e)
+                raise e
             except Exception as e:
                 print('Error:', e)
                 continue

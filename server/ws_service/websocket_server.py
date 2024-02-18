@@ -48,9 +48,13 @@ class WebSocketServer:
 
     async def start(self):
         """启动WebSocket服务器"""
-        self.server = await websockets.serve(self.handler, self.host, self.port)
-        print(f"WebSocket Server started at ws://{self.host}:{self.port}")
-        await self.server.wait_closed()
+        try:
+            self.server = await websockets.serve(self.handler, self.host, self.port)
+            print(f"WebSocket Server started at ws://{self.host}:{self.port}")
+            await self.server.wait_closed()
+        except asyncio.CancelledError:
+            print("WebSocket Server cancellation detected, stopping...")
+            await self.stop()
 
     async def stop(self):
         """停止WebSocket服务器"""
