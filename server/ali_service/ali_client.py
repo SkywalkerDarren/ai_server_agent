@@ -107,7 +107,7 @@ class AliClient:
                 continue
             elif status.status == 'Stopped':
                 print("Server is stopped")
-                break
+                return True
             elif status.status == 'Running':
                 print(f"Server is running on IP: {status.public_ip}")
                 await self.sdk.stop_instance(status.instance_id)

@@ -163,7 +163,7 @@ class AI:
                     status = await self.ali_client.stop_server()
                     msg += f"观察结果: {status}\n"
                 elif tool.function.name == "server_status":
-                    status = await self.ali_client.get_server_status()
+                    status = await self.ali_client.get_server_status(CONFIG.aliyun.server_name)
                     msg += f"观察结果: {status}\n"
             print(f'ai: {msg}')
             messages.append({
