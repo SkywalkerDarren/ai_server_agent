@@ -21,8 +21,11 @@ class AliClient:
             access_key_secret=CONFIG.aliyun.access_key_secret,
             region_id=CONFIG.aliyun.region_id
         )
+        self.instance_name = CONFIG.aliyun.server_name
+        self.disk_name = CONFIG.aliyun.disk_name
 
-    async def get_server_status(self, instance_name: str) -> Optional[ServerStatus]:
+    async def get_server_status(self, instance_name=None) -> Optional[ServerStatus]:
+        instance_name = instance_name or self.instance_name
 
         body = await self.sdk.get_server_status(instance_name)
         if not body:
@@ -42,16 +45,16 @@ class AliClient:
         return ServerStatus(status=instance.status, public_ip=public_ip, instance_id=instance_id)
 
     async def start_server(self, instance_name=None) -> Optional[ServerStatus]:
-        instance_name = instance_name or CONFIG.aliyun.server_name
+        instance_name = instance_name or self.instance_name
 
-        status = await self.get_server_status(instance_name)
+        status = await self.get_server_status(self.instance_name)
         if not status:
             print("Server not found")
             return None
         instance_id = status.instance_id
 
         while True:
-            disk_body = await self.sdk.describe_disk(CONFIG.aliyun.disk_name)
+            disk_body = await self.sdk.describe_disk(self.disk_name)
             if not disk_body or len(disk_body.disks.disk) != 1:
                 print("Disk not found or more than one disk found")
                 return None
@@ -95,7 +98,7 @@ class AliClient:
                 continue
 
     async def stop_server(self, instance_name=None) -> bool:
-        instance_name = instance_name or CONFIG.aliyun.server_name
+        instance_name = instance_name or self.instance_name
         while True:
             status = await self.get_server_status(instance_name)
             if not status:

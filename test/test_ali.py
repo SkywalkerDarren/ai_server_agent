@@ -7,7 +7,7 @@ from conf.config import CONFIG
 class MyTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_get_server_status(self):
         client = AliClient()
-        await client.get_server_status(CONFIG.aliyun.server_name)
+        await client.get_server_status()
 
     async def test_start_server(self):
         client = AliClient()
