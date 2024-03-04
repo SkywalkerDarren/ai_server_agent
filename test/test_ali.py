@@ -17,6 +17,9 @@ class MyTestCase(unittest.IsolatedAsyncioTestCase):
         client = AliClient()
         await client.stop_server()
 
+    async def test_create_instance(self):
+        client = AliClient()
+        await client.create_instance()
 
 if __name__ == '__main__':
     unittest.main()

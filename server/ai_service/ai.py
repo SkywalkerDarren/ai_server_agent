@@ -31,6 +31,8 @@ class AI:
             StopServerTool(self.ali_client),
             ServerStatusTool(self.ali_client),
         ]
+        self.system_prompt = "你是一个服务器智能助手，你可以作为聊天机器人回答用户的问题，你也可以使用各种工具来操作服务器，但是一次你只能操作一个工具。"
+        self.history = []
 
     async def chat(self, user_input: str):
         if self.running_status:
@@ -47,7 +49,7 @@ class AI:
         messages = [
                 {
                     "role": "system",
-                    "content": "你是一个服务器智能助手，你可以作为聊天机器人回答用户的问题，你也可以使用各种工具来操作服务器，但是一次你只能操作一个工具。"
+                    "content": self.system_prompt
                 },
                 {
                     "role": "user",
@@ -82,4 +84,10 @@ class AI:
                 model=self.model_name,
                 messages=messages,
             )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        messages.append({
+            'role': 'assistant',
+            'content': content
+        })
+        self.history += messages[1:]
+        return content

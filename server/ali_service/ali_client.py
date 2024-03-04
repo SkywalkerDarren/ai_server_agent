@@ -23,6 +23,7 @@ class AliClient:
         )
         self.instance_name = CONFIG.aliyun.server_name
         self.disk_name = CONFIG.aliyun.disk_name
+        self.template_name = CONFIG.aliyun.template_name
 
     async def get_server_status(self, instance_name=None) -> Optional[ServerStatus]:
         instance_name = instance_name or self.instance_name
@@ -43,6 +44,16 @@ class AliClient:
         else:
             public_ip = None
         return ServerStatus(status=instance.status, public_ip=public_ip, instance_id=instance_id)
+
+    async def create_instance(self):
+        body = await self.sdk.describe_template(self.template_name)
+        if not body or len(body.launch_template_sets.launch_template_set) != 1:
+            return False
+        template_id = body.launch_template_sets.launch_template_set[0].launch_template_id
+        body = await self.sdk.run_instance(template_id)
+        if not body or len(body.instance_id_sets.instance_id_set) != 1:
+            return False
+        return True
 
     async def start_server(self, instance_name=None) -> Optional[ServerStatus]:
         instance_name = instance_name or self.instance_name
