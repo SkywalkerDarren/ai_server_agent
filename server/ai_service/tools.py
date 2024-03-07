@@ -118,6 +118,19 @@ class StopGameTool(BaseTool):
             return "停止游戏服务器失败"
 
 
+class CreateServerTool(BaseTool):
+    def __init__(self, ali_client):
+        self.ali_client = ali_client
+        super().__init__("create_server", "创建阿里云服务器")
+
+    async def run(self, validated_params):
+        status = await self.ali_client.create_server()
+        if status:
+            return "创建服务器成功"
+        else:
+            return "创建服务器失败"
+
+
 class StartServerTool(BaseTool):
     def __init__(self, ali_client):
         self.ali_client = ali_client
@@ -154,3 +167,23 @@ class ServerStatusTool(BaseTool):
             return "获取服务器状态失败"
         else:
             return json.dumps(asdict(status))
+
+
+class SearchEngineTool(BaseTool):
+    class SearchEngineParams(BaseModel):
+        """
+        搜索关键词
+        """
+        keyword: str
+
+    def __init__(self, search_client):
+        self.search_client = search_client
+        super().__init__("search_engine", "使用搜索引擎搜索关键词，搜索时建议使用中文", self.SearchEngineParams)
+
+    async def run(self, validated_params: SearchEngineParams):
+        keyword = validated_params.keyword
+        result = await self.search_client.search(keyword)
+        if not result:
+            return "搜索失败"
+        else:
+            return result
