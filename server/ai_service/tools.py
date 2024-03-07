@@ -187,3 +187,13 @@ class SearchEngineTool(BaseTool):
             return "搜索失败"
         else:
             return result
+
+
+class CleanHistoryTool(BaseTool):
+    def __init__(self, history_cleaner):
+        self.history_cleaner = history_cleaner
+        super().__init__("clean_history", "清除聊天历史记录")
+
+    async def run(self, validated_params):
+        self.history_cleaner()
+        return "历史记录已清空"

@@ -1,10 +1,11 @@
 import json
+import time
 
 import tiktoken
 from openai import AsyncOpenAI
 
 from ai_service.tools import ServerSystemInfoTool, RunningGameTool, GameListTool, StartGameTool, StopGameTool, \
-    StartServerTool, StopServerTool, ServerStatusTool, CreateServerTool, SearchEngineTool
+    StartServerTool, StopServerTool, ServerStatusTool, CreateServerTool, SearchEngineTool, CleanHistoryTool
 from ali_service.ali_client import AliClient
 from conf.config import CONFIG
 from search_service.search_service import SearchService
@@ -34,11 +35,22 @@ class AI:
             StopServerTool(self.ali_client),
             ServerStatusTool(self.ali_client),
             SearchEngineTool(self.search_service),
+            CleanHistoryTool(self.history_clear)
         ]
+        self.timestamp = time.time()
+        self.max_timestamp = 60 * 60 * 24
+        self.history = []
         self.system_prompt = "你是一个非常幽默诙谐的服务器智能助手，你可以与用户进行聊天，你也可以使用各种工具来操作服务器，但是一次你只能操作一个工具。"
+
+    def history_clear(self):
         self.history = []
 
     async def chat(self, user_input: str):
+        if time.time() - self.timestamp > self.max_timestamp:
+            self.history.clear()
+
+        self.timestamp = time.time()
+
         if self.running_status:
             return f"正在处理消息：{self.last_message}"
         self.running_status = True
@@ -57,11 +69,11 @@ class AI:
             }
         ]
         messages = [
-                {
-                    "role": "user",
-                    "content": user_input
-                }
-            ]
+            {
+                "role": "user",
+                "content": user_input
+            }
+        ]
         response = await self.client.chat.completions.create(
             n=1,
             model=self.model_name,
