@@ -7,17 +7,17 @@ from ai_service.tools import ServerSystemInfoTool, RunningGameTool, GameListTool
     StartServerTool, StopServerTool, ServerStatusTool, CreateServerTool, SearchEngineTool
 from ali_service.ali_client import AliClient
 from conf.config import CONFIG
-from search_service.search_client import SearchClient
+from search_service.search_service import SearchService
 from ws_service.message_service import MessageService
 
 
 class AI:
-    def __init__(self, message_service: MessageService, ali_client: AliClient, search_client: SearchClient):
+    def __init__(self, message_service: MessageService, ali_client: AliClient, search_service: SearchService):
         self.running_status = False
         self.last_message = ""
         self.message_service = message_service
         self.ali_client = ali_client
-        self.search_client = search_client
+        self.search_service = search_service
         self.model_name = "gpt-3.5-turbo-0125"
         self.client = AsyncOpenAI(
             api_key=CONFIG.openai.token,
@@ -33,7 +33,7 @@ class AI:
             StartServerTool(self.ali_client),
             StopServerTool(self.ali_client),
             ServerStatusTool(self.ali_client),
-            SearchEngineTool(self.search_client),
+            SearchEngineTool(self.search_service),
         ]
         self.system_prompt = "你是一个非常幽默诙谐的服务器智能助手，你可以与用户进行聊天，你也可以使用各种工具来操作服务器，但是一次你只能操作一个工具。"
         self.history = []

@@ -6,6 +6,7 @@ from kook_bot.at_message_handler import AtMessageHandler
 from kook_bot.kook_client import KookClient
 from kook_bot.kook_websocket import KookWebsocket
 from search_service.search_client import SearchClient
+from search_service.search_service import SearchService
 from ws_service.hearbeat_service import HeartbeatService
 from ws_service.message_service import MessageService
 from ws_service.websocket_server import WebSocketServer
@@ -30,9 +31,9 @@ async def run():
 
     ali_client = AliClient()
 
-    search_client = SearchClient()
+    search_service = SearchService()
 
-    ai_client = AI(msg_service, ali_client, search_client)
+    ai_client = AI(msg_service, ali_client, search_service)
 
     kook_client = KookClient()
     kook_websocket = KookWebsocket(kook_client)

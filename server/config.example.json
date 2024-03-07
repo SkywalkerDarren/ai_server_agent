@@ -16,5 +16,12 @@
     "server_name": "game-server",
     "template_name": "game-template",
     "disk_name": "game-disk"
+  },
+  "google": {
+    "cx": "<YOUR ENGINE ID>",
+    "key": "<YOUR GOOGLE SEARCH KEY>",
+    "cr": "countryCN",
+    "gl": "cn",
+    "num": 10
   }
 }

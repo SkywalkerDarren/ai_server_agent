@@ -1,6 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -28,10 +29,20 @@ class AliyunConfig:
 
 
 @dataclass
+class GoogleConfig:
+    key: str
+    cx: str
+    cr: Optional[str]
+    gl: Optional[str]
+    num: Optional[int] = 10
+
+
+@dataclass
 class Config:
     openai: OpenAIConfig
     kook: KookConfig
     aliyun: AliyunConfig
+    google: GoogleConfig
 
     @staticmethod
     def load() -> 'Config':
@@ -40,7 +51,8 @@ class Config:
         return Config(
             openai=OpenAIConfig(**config_data.get('openai', {})),
             kook=KookConfig(**config_data.get('kook', {})),
-            aliyun=AliyunConfig(**config_data.get('aliyun', {}))
+            aliyun=AliyunConfig(**config_data.get('aliyun', {})),
+            google=GoogleConfig(**config_data.get('google', {}))
         )
 
 
