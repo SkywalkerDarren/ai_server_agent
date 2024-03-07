@@ -18,16 +18,18 @@ class GoogleSearchClient(SearchClient):
 
     async def search(self, query: str) -> str:
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    self.url,
-                    params={
-                        'key': self.key,
-                        'cx': self.cx,
-                        'q': query,
-                        'cr': self.cr,
-                        'gl': self.gl,
-                        'num': self.num
-                    }) as response:
+            params = {
+                'key': self.key,
+                'cx': self.cx,
+                'q': query,
+            }
+            if self.cr:
+                params['cr'] = self.cr
+            if self.gl:
+                params['gl'] = self.gl
+            if self.num:
+                params['num'] = self.num
+            async with session.get(self.url, params=params) as response:
                 data = await response.json()
                 items = self._filter_result(data['items'])
                 return json.dumps(items, ensure_ascii=False)
